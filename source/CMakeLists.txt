@@ -4,9 +4,15 @@ target_link_libraries(WebGPU PRIVATE
     libassert::assert
     webgpu)
 
+add_library(Engine)
+target_sources(Engine PUBLIC FILE_SET CXX_MODULES FILES engine.cpp)
+target_link_libraries(Engine PRIVATE
+    webgpu)
+
 add_library(App)
 target_sources(App PUBLIC FILE_SET CXX_MODULES FILES app.cpp)
 target_link_libraries(App PRIVATE
+    Engine
     WebGPU
     webgpu
     SDL3::SDL3

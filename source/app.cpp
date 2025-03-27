@@ -14,6 +14,7 @@ module;
 export module xuan.app;
 
 import xuan.webgpu;
+import xuan.engine;
 
 namespace xuan
 {
@@ -64,39 +65,45 @@ log_properties(WGPUAdapter adapter)
 	wgpuAdapterInfoFreeMembers(info);
 }
 
+Engine
+get_engine(SDL_Window *window)
+{
+	WGPUInstanceDescriptor desc{};
+	desc.nextInChain = nullptr;
+
+	WGPUInstance instance = DEBUG_ASSERT_VAL(wgpuCreateInstance(&desc));
+	WGPUAdapter adapter = requestAdapterSync(instance);
+	log_limits(adapter);
+	log_features(adapter);
+	log_properties(adapter);
+	WGPUDevice device = requestDeviceSync(instance, adapter);
+
+	// No longer needed
+	wgpuInstanceRelease(instance);
+	wgpuAdapterRelease(adapter);
+
+	WGPUSurface surface = DEBUG_ASSERT_VAL(SDL_GetWGPUSurface(instance, window));
+	return Engine{device, surface};
+}
+
 export class App
 {
   public:
-	App() : _window(SDL_CreateWindow("xuan", 800, 600, SDL_WINDOW_RESIZABLE))
+	App() :
+		_window(SDL_CreateWindow("xuan", 800, 600, SDL_WINDOW_RESIZABLE)),
+		_engine{get_engine(_window)},
+		_root{std::make_unique<TextView>()}
 	{
-		WGPUInstanceDescriptor desc{};
-		desc.nextInChain = nullptr;
-
-		WGPUInstance instance = DEBUG_ASSERT_VAL(wgpuCreateInstance(&desc));
-		WGPUAdapter adapter = requestAdapterSync(instance);
-		log_limits(adapter);
-		log_features(adapter);
-		log_properties(adapter);
-		_device = requestDeviceSync(instance, adapter);
-
-		// No longer needed
-		wgpuInstanceRelease(instance);
-		wgpuAdapterRelease(adapter);
-
-		_surface = DEBUG_ASSERT_VAL(SDL_GetWGPUSurface(instance, _window));
 	}
 
-	~App()
-	{
-		wgpuSurfaceRelease(_surface);
-		wgpuDeviceRelease(_device);
-	}
+	~App() {}
 
 	SDL_AppResult
 	iterate()
 	{
-		if (_window == nullptr)
+		if (_window == nullptr and _root != nullptr)
 		{
+			_root->render(_engine);
 			return SDL_APP_SUCCESS;
 		}
 		return SDL_APP_CONTINUE;
@@ -118,8 +125,8 @@ export class App
 
   private:
 	SDL_Window *_window;
-	WGPUDevice _device;
-	WGPUSurface _surface;
+	Engine _engine;
+	std::unique_ptr<View> _root;
 };
 
 } // namespace xuan
