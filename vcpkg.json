@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "gsl-lite",
+    "libassert",
+    "sdl3",
+    "spdlog",
+    "magic-enum"
+  ]
+}
