@@ -2,13 +2,13 @@ add_library(WebGPU)
 target_sources(WebGPU PUBLIC FILE_SET CXX_MODULES FILES webgpu.cpp)
 target_link_libraries(WebGPU PRIVATE 
     libassert::assert
-    dawn::webgpu_dawn)
+    webgpu)
 
 add_library(App)
 target_sources(App PUBLIC FILE_SET CXX_MODULES FILES app.cpp)
 target_link_libraries(App PRIVATE
     WebGPU
-    dawn::webgpu_dawn
+    webgpu
     SDL3::SDL3
     sdl3webgpu
     magic_enum::magic_enum
@@ -19,7 +19,7 @@ add_executable(xuan main.cpp)
 target_link_libraries(xuan PRIVATE
     App
     SDL3::SDL3
-    dawn::webgpu_dawn
+    webgpu
     gsl::gsl-lite-v1
     spdlog::spdlog)
 

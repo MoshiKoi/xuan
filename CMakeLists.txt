@@ -12,9 +12,14 @@ find_package(gsl-lite CONFIG REQUIRED)
 find_package(libassert CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
-find_package(dawn CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
-add_library(webgpu ALIAS dawn::webgpu_dawn) # Expected by sdl3webgpu
+if (USE_INSTALLED_DAWN)
+    find_package(dawn CONFIG REQUIRED)
+    add_library(webgpu ALIAS dawn::webgpu_dawn) # Expected by sdl3webgpu
+else()
+    add_subdirectory(webgpu)
+endif()
+
 add_subdirectory(sdl3webgpu)
 add_subdirectory(source)
